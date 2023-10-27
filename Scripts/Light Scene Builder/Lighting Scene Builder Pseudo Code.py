@@ -78,6 +78,8 @@ def showUI() :
     
 showUI()    
 
- def openFile()
+def openFile:
+   cmds.file( fileName, i=True );
+   return 1
 
-    cmds.fileBrowserDialog( m=0, fc=importImage, ft='image', an='Import_Image', om='Import' )
+cmds.fileBrowserDialog( m=0, fc=openFile, ft='image', an='Import_Image', om='Import' )
