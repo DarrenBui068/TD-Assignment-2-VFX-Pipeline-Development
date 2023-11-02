@@ -87,7 +87,7 @@ class ImportExportTool(QtWidgets.QDialog):
     def show_dialog(self, title, message):
         msg_box = QtWidgets.QMessageBox(self)
         msg_box.setWindowTitle(title)
-        msg_box.setTet(message)
+        msg_box.setText(message)
         msg_box.setIcon(QtWidgets.QMessageBox.Information)
         msg_box.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg_box.exec_()
