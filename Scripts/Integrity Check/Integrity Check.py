@@ -1,8 +1,11 @@
 import maya.cmds as cmds
 
-if cmds.window('IntegrityCheck', exists = True):
-    cmds.deleteUI('IntegrityCheck')
-window1 = cmds.window('IntegrityCheck', resizeToFitChildren=True)
+if cmds.window('SelectChecks', exists = True):
+    cmds.deleteUI('SelectChecks')
+if cmds.window('Verify', exists = True):
+    cmds.deleteUI('Verify')
+    
+cmds.window('SelectChecks', resizeToFitChildren=True)
 #cmds.columnLayout(columnAttach=("left", 10))
 cmds.columnLayout(adjustableColumn=True, columnOffset=("both", 10))
 cmds.separator(h=10,style='none')
@@ -87,8 +90,118 @@ cmds.checkBox("Transform Set", label="Transform", annotation="Checks if the tran
 cmds.checkBox("Pivot Set", label="Pivot", annotation="Checks if the pivot is at the origin", offCommand=setChildOff)
 cmds.checkBox("Asset version", annotation="Checks if each referenced asset is the latest version", offCommand=setChildOff)
 cmds.separator(h=10,style='none')
-    
-cmds.setParent("..")
-cmds.button("Continue")
 
-cmds.showWindow(window1)
+checkUnusedNodes = False
+checkAssetNaming = False
+checkNodeHierarchy = False
+checkReferenceErrors = False
+checkVerySmallDecimals = False
+checkCameraApeture = False
+checkFocalLength = False
+checkFStop = False
+checkTransformSetPiece = False
+checkPivotSetPiece = False
+checkTransformSet = False
+checkPivotSet = False
+checkAssetVersion = False
+def onContinue(*args):
+    global checkUnusedNodes
+    global checkAssetNaming
+    global checkNodeHierarchy
+    global checkReferenceErrors
+    global checkVerySmallDecimals
+    global checkCameraApeture
+    global checkFocalLength
+    global checkFStop
+    global checkTransformSetPiece
+    global checkPivotSetPiece
+    global checkTransformSet
+    global checkPivotSet
+    global checkAssetVersion
+    checkUnusedNodes = cmds.checkBox("Unused_nodes", query=True, value=True)
+    checkAssetNaming = cmds.checkBox("Asset_naming", query=True, value=True)
+    checkNodeHierarchy = cmds.checkBox("Node_hierarchy", query=True, value=True)
+    checkReferenceErrors = cmds.checkBox("Reference_errors", query=True, value=True)
+    checkVerySmallDecimals = cmds.checkBox("Very_small_decimals", query=True, value=True)
+    checkCameraApeture = cmds.checkBox("Camera_apeture", query=True, value=True)
+    checkFocalLength = cmds.checkBox("Focal_length", query=True, value=True)
+    checkFStop = cmds.checkBox("F_Stop", query=True, value=True)
+    checkTransformSetPiece = cmds.checkBox("Transform_Set_Piece", query=True, value=True)
+    checkPivotSetPiece = cmds.checkBox("Pivot_Set_Piece", query=True, value=True)
+    checkTransformSet = cmds.checkBox("Transform_Set", query=True, value=True)
+    checkPivotSet = cmds.checkBox("Pivot_Set", query=True, value=True)
+    checkAssetVersion = cmds.checkBox("Asset_version", query=True, value=True)
+    verify()
+    cmds.showWindow("Verify")
+
+
+cmds.setParent("..")
+cmds.button("Continue", command=onContinue)
+
+# fckin main window
+cmds.window('Verify', resizeToFitChildren=True)
+cmds.columnLayout(adjustableColumn=True, columnOffset=("both", 10))
+cmds.separator(h=10,style='none')
+
+def getSet():
+    for set in cmds.ls(assemblies=True):
+        cameraChildren = cmds.listRelatives(set, children=True, type="camera")
+        if cameraChildren:
+            continue
+        return set
+def getCamera():
+    for camera in cmds.ls(type="camera"):
+        if camera != "perspShape" and camera != "frontShape" and camera != "topShape" and camera != "sideShape":
+            return camera
+
+unusedNodesValid = None
+assetNamingValid = None
+nodeHierarchyValid = None
+referenceErrorsValid = None
+verySmallDecimalsValid = None
+cameraApetureValid = None
+focalLengthValid = None
+fStopValid = None
+transformSetPieceValid = None
+pivotSetPieceValid = None
+transformSetValid = None
+pivotSetValid = None
+assetVersionValid = None
+def verify():
+    global unusedNodesValid
+    global assetNamingValid
+    global nodeHierarchyValid
+    global referenceErrorsValid
+    global verySmallDecimalsValid
+    global cameraApetureValid
+    global focalLengthValid
+    global fStopValid
+    global transformSetPieceValid
+    global pivotSetPieceValid
+    global transformSetValid
+    global pivotSetValid
+    global assetVersionValid
+    if checkCameraApeture:
+        camera = getCamera()
+        cameraApetureValid = round(cmds.getAttr(camera + ".horizontalFilmAperture")/cmds.getAttr(camera + ".verticalFilmAperture"), 3) == round(16/9, 3)
+    if checkFocalLength:
+        camera = getCamera()
+        focalLengthValid = cmds.getAttr(camera + ".focalLength") in [12, 14, 16, 18, 21, 25, 27, 32, 35, 40, 50, 65, 75, 100, 135, 150]
+    if checkFStop:
+        camera = getCamera()
+        fStopValid = cmds.getAttr(camera + ".fStop") in [1.3, 2, 2.8, 4, 5.6, 8, 11, 16, 22]
+        
+    showValidation()
+        
+def showValidation():
+    global pivotSetValid
+    if pivotSetValid:
+        cmds.text("<font color=green>good</font>")
+    else:
+        cmds.text("<font color=red>bad</font>")
+    
+        
+
+
+
+cmds.showWindow('SelectChecks')
