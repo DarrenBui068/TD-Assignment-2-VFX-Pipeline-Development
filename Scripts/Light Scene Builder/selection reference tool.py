@@ -6,19 +6,19 @@ path = cmds.workspace (rd = True , q = True)
 print(path)
 
 def selectAll():
-    cmds.select(all = True) 
+    cmds.select(allDagObjects=True) 
     
 def deselectAll():
     cmds.select(clear = True)
     
 def referenceSelected():
-    for obj in sel:
-        cmds.setAttr(mb + '.v', 1)
-        cmds.select(mb)
-        cmds.file(path + '_' + '.mb', 
+    for obj in cmds.ls(selection=True):
+        cmds.setAttr(obj + '.v', 1)
+        cmds.select(obj)
+        cmds.file(path + obj + '.mb', 
             es = True,
             type = 'mayaBinary')
-        cmds.setAttr(mb + '.v', 0)
+        cmds.setAttr(obj + '.v', 0)
     
     
 def showUI():
