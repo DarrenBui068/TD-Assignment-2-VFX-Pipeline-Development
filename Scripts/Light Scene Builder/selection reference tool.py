@@ -12,7 +12,8 @@ def deselectAll():
     cmds.select(clear = True)
     
 def referenceSelected():
-    for obj in cmds.ls(selection=True):
+    for obj in cmds.ls(assemblies=True):
+        print(obj)
         cmds.setAttr(obj + '.v', 1)
         cmds.select(obj)
         cmds.file(path + obj + '.mb', 
