@@ -1,39 +1,103 @@
-Save
+import os
+import glob
+import maya.cmds as cmds
+from maya import OpenMayaUI as omui
+from PySide2 import QtWidgets, QtGui
+from shiboken2 import wrapInstance
 
- FUNCTION saveFile(assetName, assetType)
-    	# Generate file name
-   	versionNumber = getNextVersion(assetName)
-    	fileName = assetName + versionNumber
+def maya_main_window():
+    main_window = omui.MQtUtil.mainWindow()
+    return wrapInstance(int(main_window), QtWidgets.QWidget)
 
-	# Save the file to the WIP folder
-    	save file to WIP folder with fileName
+class ImportExportTool(QtWidgets.QDialog):
+    def __init__(self, parent=maya_main_window()):
+        super(ImportExportTool, self).__init__(parent)
+        
+        self.default_directory = r''  # Target Path
+        #C:\Users\ASUS\Desktop\Assessment2_Test_Assets_v002\publish\assets\prop\car04\model\source
+        
+        self.setWindowTitle("Import & Export Tool")
+        self.setMinimumWidth(400)
+        
+        self.create_widgets()
+        self.create_layout()
+        self.create_connections()
 
-    	print "File saved to “ [path]
-END FUNCTION
+    def create_widgets(self):
+        self.search_bar = QtWidgets.QLineEdit()
+        self.search_bar.setPlaceholderText("Search for files (e.g. .abc, .fbx, filename)")
+        self.search_button = QtWidgets.QPushButton("Search")
 
-Publish
+        self.info_label = QtWidgets.QLabel("")
+        self.import_button = QtWidgets.QPushButton("Import File")
+        self.export_button = QtWidgets.QPushButton("Export File")
+        
+    def create_layout(self):
+        search_layout = QtWidgets.QHBoxLayout()
+        search_layout.addWidget(self.search_bar)
+        search_layout.addWidget(self.search_button)
 
-FUNCTION publishFile(assetName, assetType)
-# Get the current WIP version
-    	versionNumber = getCurrentVersion(assetName)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addLayout(search_layout)
+        layout.addWidget(self.info_label)
+        layout.addWidget(self.import_button)
+        layout.addWidget(self.export_button)
 
-    	# Copy the WIP file to the publishing source folder
-    	source_file = os.path.join(wip_directory, asset_type, f"{asset_name}_v{version_number:01}.ma")
-    	publish_source_folder = os.path.join(publish_directory, asset_type)
-    	publish_source_file = os.path.join(publish_source_folder, f"{asset_name}_v{version_number:01}.ma")
-    	shutil.copy2(source_file, publish_source_file)
+    def create_connections(self):
+        self.search_button.clicked.connect(self.search_files)
+        self.import_button.clicked.connect(self.import_file)
+        self.export_button.clicked.connect(self.export_file)
 
-    	Print "File published to source folder: {publish_source_file}"
-END FUNCTION
+    def search_files(self):
+        search_term = self.search_bar.text().strip()
+        if not search_term:
+            self.info_label.setText("Please enter a search term.")
+            return
 
-Main
+        search_path = os.path.join(self.default_directory, '*' + search_term + '*')
+        matching_files = glob.glob(search_path)
 
-assetName = "myAsset"   # Replace with the actual asset name
-assetType = assetTypes.get(assetName, "")
+        if not matching_files:
+            self.info_label.setText(f"No files found for '{search_term}'.")
+        else:
+            first_file = matching_files[0]
+            self.info_label.setText(f"Found: {os.path.basename(first_file)}")
 
-IF assetType is not empty 
-        	saveFile(assetName, assetType)
-       	publishFile(assetName, assetType)
-ELSE
-       	print "Invalid asset name."
-END IF
+    def import_file(self):
+        filter_text = self.search_bar.text()
+        file_path = cmds.fileDialog2(fileMode=1, caption="Select File to Import", fileFilter=filter_text, dir=self.default_directory)
+        if file_path:
+            try:
+                cmds.file(file_path[0], i=True)
+                self.show_dialog("Import Successful!", f"File '{os.path.basename(file_path[0])}' has been imported successfully.\nFormat: {os.path.splitext(file_path[0])[1]}\nLocation: {file_path[0]}")
+            except Exception as e:
+                self.show_dialog("Import Failed!", str(e))
+
+    def export_file(self):
+        filter_text = self.search_bar.text()
+        file_path = cmds.fileDialog2(fileMode=0, caption="Save File", fileFilter=filter_text, dir=self.default_directory)
+        if file_path:
+            try:
+                cmds.file(rename=file_path[0])
+                cmds.file(save=True, type="mayaBinary", force=True)
+                self.show_dialog("Export Successful!", f"File '{os.path.basename(file_path[0])}' has been exported successfully.\nFormat: {os.path.splitext(file_path[0])[1]}\nLocation: {file_path[0]}")
+            except Exception as e:
+                self.show_dialog("Export Failed!", str(e))
+
+    def show_dialog(self, title, message):
+        msg_box = QtWidgets.QMessageBox(self)
+        msg_box.setWindowTitle(title)
+        msg_box.setTet(message)
+        msg_box.setIcon(QtWidgets.QMessageBox.Information)
+        msg_box.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg_box.exec_()
+
+if "import_export_tool" in globals():
+    try:
+        import_export_tool.close()
+        import_export_tool.deleteLater()
+    except:
+        pass
+
+import_export_tool = ImportExportTool()
+import_export_tool.show()
