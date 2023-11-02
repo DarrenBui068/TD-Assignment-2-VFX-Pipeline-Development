@@ -22,14 +22,19 @@ class ImportExportTool(QtWidgets.QDialog):
     def create_widgets(self):
         self.search_bar = QtWidgets.QLineEdit()
         self.search_bar.setPlaceholderText("Search for files (e.g. .abc, .fbx, filename)")
-        
+        self.search_button = QtWidgets.QPushButton("Search")
+
         self.info_label = QtWidgets.QLabel("")
         self.import_button = QtWidgets.QPushButton("Import File")
-        self.export_button = QtWidgets.QPushButton("Export Multiple Files")
+        self.export_button = QtWidgets.QPushButton("Export File")
         
     def create_layout(self):
+        search_layout = QtWidgets.QHBoxLayout()
+        search_layout.addWidget(self.search_bar)
+        search_layout.addWidget(self.search_button)
+
         layout = QtWidgets.QVBoxLayout(self)
-        layout.addWidget(self.search_bar)
+        layout.addLayout(search_layout)
         layout.addWidget(self.info_label)
         layout.addWidget(self.import_button)
         layout.addWidget(self.export_button)
@@ -50,15 +55,14 @@ class ImportExportTool(QtWidgets.QDialog):
 
     def export_file(self):
         filter_text = self.search_bar.text()
-        file_paths = cmds.fileDialog2(fileMode=3, caption="Save Files", fileFilter=filter_text)
-        if file_paths:
-            for file_path in file_paths:
-                try:
-                    cmds.file(rename=file_path)
-                    cmds.file(save=True, type="mayaBinary", force=True)
-                    self.show_dialog("Export Successful!", f"File '{os.path.basename(file_path)}' has been exported successfully.\nFormat: {os.path.splitext(file_path)[1]}\nLocation: {file_path}")
-                except Exception as e:
-                    self.show_dialog("Export Failed!", str(e))
+        file_path = cmds.fileDialog2(fileMode=0, caption="Save File", fileFilter=filter_text)
+        if file_path:
+            try:
+                cmds.file(rename=file_path[0])
+                cmds.file(save=True, type="mayaBinary", force=True)
+                self.show_dialog("Export Successful!", f"File '{os.path.basename(file_path[0])}' has been exported successfully.\nFormat: {os.path.splitext(file_path[0])[1]}\nLocation: {file_path[0]}")
+            except Exception as e:
+                self.show_dialog("Export Failed!", str(e))
 
     def show_dialog(self, title, message):
         msg_box = QtWidgets.QMessageBox(self)
