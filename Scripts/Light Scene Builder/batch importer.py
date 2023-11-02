@@ -10,7 +10,7 @@ def FileBatchImport(*args):
 		multipleFilters =  'Importable file formats (*.abc *.fbx *.mb *.obj )'
 	else:
 		multipleFilters =  'Importable file formats (*.abc *.fbx *.mb *.obj )'
-	files = cmds.fileDialog2(caption = 'Import file in batch', ds = 2, fileMode = 4, okCaption = 'Import', fileFilter = multipleFilters, hideNameEdit = False)
+	files = cmds.fileDialog2(caption = 'Import file in batch', ds = 1, fileMode = 4, okCaption = 'Import', fileFilter = multipleFilters, hideNameEdit = False)
 	if files == None or files[0] == None or len(files) < 0:
 		sys.exit('Cancelled selection of files.\n')
 
