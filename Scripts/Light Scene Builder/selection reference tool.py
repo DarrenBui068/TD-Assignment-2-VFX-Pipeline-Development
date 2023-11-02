@@ -24,7 +24,7 @@ def referenceSelected():
     
 def showUI():
     
-    myWindow = cmds.window(title = "Selection and Referencing Tool", widthHeight =(250,200))
+    myWindow = cmds.window(title = "Selection and Referencing Tool", widthHeight =(250,400))
     cmds.columnLayout()
     
     
@@ -43,6 +43,16 @@ def showUI():
     cmds.separator(h=5) 
     cmds.button(label = "Convert selected assets to references", command = "referenceSelected()")
     cmds.separator(h=20)
+    
+    cmds.text('Use to check selected asset version')
+    cmds.separator(h=5) 
+    cmds.button(label = "Check selected version", command = "checkVersion()")
+    cmds.separator(h=20)
+    
+    cmds.text('Use to update out of date asset')
+    cmds.separator(h=5) 
+    cmds.button(label = "Update Asset version", command = "updateVersion()")
+    cmds.separator(h=20)    
     
     cmds.showWindow(myWindow)
     
