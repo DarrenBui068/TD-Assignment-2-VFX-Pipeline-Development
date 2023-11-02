@@ -12,6 +12,8 @@ class ImportExportTool(QtWidgets.QDialog):
     def __init__(self, parent=maya_main_window()):
         super(ImportExportTool, self).__init__(parent)
         
+        self.default_directory = r'C:\Users\ASUS\Desktop\Assessment2_Test_Assets_v002\publish'  # 默认文件夹路径
+        
         self.setWindowTitle("Import & Export Tool")
         self.setMinimumWidth(400)
         
@@ -40,12 +42,21 @@ class ImportExportTool(QtWidgets.QDialog):
         layout.addWidget(self.export_button)
 
     def create_connections(self):
+        self.search_button.clicked.connect(self.set_directory_from_search)
         self.import_button.clicked.connect(self.import_file)
         self.export_button.clicked.connect(self.export_file)
 
+    def set_directory_from_search(self):
+        search_path = self.search_bar.text().strip()
+        if os.path.exists(search_path):
+            self.default_directory = search_path
+            self.info_label.setText(f"Default directory set to: {self.default_directory}")
+        else:
+            self.show_dialog("Error", f"'{search_path}' is not a valid path.")
+
     def import_file(self):
         filter_text = self.search_bar.text()
-        file_path = cmds.fileDialog2(fileMode=1, caption="Select File to Import", fileFilter=filter_text)
+        file_path = cmds.fileDialog2(fileMode=1, caption="Select File to Import", fileFilter=filter_text, dir=self.default_directory)
         if file_path:
             try:
                 cmds.file(file_path[0], i=True)
@@ -55,7 +66,7 @@ class ImportExportTool(QtWidgets.QDialog):
 
     def export_file(self):
         filter_text = self.search_bar.text()
-        file_path = cmds.fileDialog2(fileMode=0, caption="Save File", fileFilter=filter_text)
+        file_path = cmds.fileDialog2(fileMode=0, caption="Save File", fileFilter=filter_text, dir=self.default_directory)
         if file_path:
             try:
                 cmds.file(rename=file_path[0])
