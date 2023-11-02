@@ -1,4 +1,22 @@
 import maya.cmds as cmds
+import os
+from os import listdir
+import re
+from pathlib import Path
+from os.path import isfile, join
+
+def getVersion(path, prop):
+    count = 0
+    files = [f for f in listdir(path) if isfile(join(path, f))]
+    print(prop)
+    for fileName in files:
+        print(fileName)
+        if re.search(prop + "\.v...\.mb" , fileName):
+            count += 1
+    return count
+    
+def versionToString(version):
+    return "%03d" % (version)
 
 if cmds.window('SelectChecks', exists = True):
     cmds.deleteUI('SelectChecks')
@@ -190,6 +208,27 @@ def verify():
     if checkFStop:
         camera = getCamera()
         fStopValid = cmds.getAttr(camera + ".fStop") in [1.3, 2, 2.8, 4, 5.6, 8, 11, 16, 22]
+    if checkTransformSet:
+        set = getSet()
+        transformSetValid = cmds.getAttr(set + ".translate")[0] == (0, 0, 0)
+    if checkPivotSet:
+        set = getSet()
+        pivotSetValid = cmds.getAttr(set + ".rotatePivot")[0] == (0, 0, 0) and cmds.getAttr(set + ".scalePivot")[0] == (0, 0, 0)
+    if checkTransformSetPiece:
+        set = getSet()
+        transformSetPieceValid = cmds.getAttr(set + ".translate")[0] == (0, 0, 0)
+    if checkPivotSetPiece:
+        set = getSet()
+        pivotSetPieceValid = cmds.getAttr(set + ".rotatePivot")[0] == (0, 0, 0) and cmds.getAttr(set + ".scalePivot")[0] == (0, 0, 0)
+    if checkAssetVersion:
+        for reference in cmds.ls(rf=True):
+            fullPath = cmds.referenceQuery(reference, filename = True)
+            fileName = os.path.basename(fullPath)
+            propName = fileName.split(".")[0]
+            path = Path(fullPath)
+            path = path.parent.as_posix() + "/"
+            versionToString(getVersion(path, propName))
+            
         
     showValidation()
         
