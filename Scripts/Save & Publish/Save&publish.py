@@ -1,4 +1,5 @@
 import os
+import glob
 import maya.cmds as cmds
 from maya import OpenMayaUI as omui
 from PySide2 import QtWidgets, QtGui
@@ -12,7 +13,8 @@ class ImportExportTool(QtWidgets.QDialog):
     def __init__(self, parent=maya_main_window()):
         super(ImportExportTool, self).__init__(parent)
         
-        self.default_directory = r'C:\Users\ASUS\Desktop\Assessment2_Test_Assets_v002\publish'  # 默认文件夹路径
+        self.default_directory = r''  # Target Path
+        #C:\Users\ASUS\Desktop\Assessment2_Test_Assets_v002\publish\assets\prop\car04\model\source
         
         self.setWindowTitle("Import & Export Tool")
         self.setMinimumWidth(400)
@@ -42,17 +44,24 @@ class ImportExportTool(QtWidgets.QDialog):
         layout.addWidget(self.export_button)
 
     def create_connections(self):
-        self.search_button.clicked.connect(self.set_directory_from_search)
+        self.search_button.clicked.connect(self.search_files)
         self.import_button.clicked.connect(self.import_file)
         self.export_button.clicked.connect(self.export_file)
 
-    def set_directory_from_search(self):
-        search_path = self.search_bar.text().strip()
-        if os.path.exists(search_path):
-            self.default_directory = search_path
-            self.info_label.setText(f"Default directory set to: {self.default_directory}")
+    def search_files(self):
+        search_term = self.search_bar.text().strip()
+        if not search_term:
+            self.info_label.setText("Please enter a search term.")
+            return
+
+        search_path = os.path.join(self.default_directory, '*' + search_term + '*')
+        matching_files = glob.glob(search_path)
+
+        if not matching_files:
+            self.info_label.setText(f"No files found for '{search_term}'.")
         else:
-            self.show_dialog("Error", f"'{search_path}' is not a valid path.")
+            first_file = matching_files[0]
+            self.info_label.setText(f"Found: {os.path.basename(first_file)}")
 
     def import_file(self):
         filter_text = self.search_bar.text()
