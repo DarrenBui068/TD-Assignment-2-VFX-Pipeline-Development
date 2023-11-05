@@ -63,7 +63,6 @@ class SaveTool(QtWidgets.QDialog):
         self.create_folder_button.clicked.connect(self.create_folder)
         self.publish_button.clicked.connect(self.publish_assets)
     def publish_assets(self):
-        # 这里插入你的导出逻辑
         selected_objs = cmds.ls(selection=True)
         
         if not selected_objs:
@@ -76,7 +75,6 @@ class SaveTool(QtWidgets.QDialog):
             os.makedirs(export_path)
         
         for obj in selected_objs:
-            # 这里我用了类似你提供的版本控制逻辑来避免覆盖已有文件
             version = 1
             while True:
                 abc_file = os.path.join(export_path, f"{obj}_v{version}.abc")
@@ -84,7 +82,6 @@ class SaveTool(QtWidgets.QDialog):
                     break
                 version += 1
             
-            # 将选择的对象导出为Alembic文件
             cmds.AbcExport(j='-frameRange 1 1 -root {0} -file {1}'.format(obj, abc_file))
         
         self.status_label.setText("Publish Complete!")
